@@ -16,21 +16,30 @@ if not OPENAI_API_KEY:
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Função assíncrona para chamar o modelo
-async def call_ai(prompt: str, system: str | None = None, max_tokens: int = 800):
+async def call_ai(prompt: str, system: str | None = None, max_completion_tokens: int = 1000):
     def sync_call():
-        messages = []
+         # Concatena system + user manualmente
         if system:
-            messages.append({"role": "system", "content": system})
-        messages.append({"role": "user", "content": prompt})
+            full_input = f"SYSTEM:\n{system}\n\nUSER:\n{prompt}"
+        else:
+            full_input = prompt
 
-        # Nova forma de criar a requisição
-        resp = client.chat.completions.create(
+        resp = client.responses.create(
             model=MODEL,
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=0.2,
+            input=full_input,
         )
-        return resp.choices[0].message.content.strip()
+        
+        if hasattr(resp, "output_text") and resp.output_text:
+            return resp.output_text.strip()
+
+        # Nova estrutura: resp.output[0].content[0].text
+        if hasattr(resp, "output"):
+            try:
+                return resp.output[0].content[0].text.strip()
+            except:
+                pass
+
+        return ""
 
     # Executa em thread separada para não travar o event loop
     return await asyncio.to_thread(sync_call)
