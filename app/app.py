@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .agents.backlog_agent import BacklogAgent
+from .agents.backlog_agent import DevOpsBacklogAgent
 from .agents.architecture_agent import ArchitectureAgent
 from .agents.documentation_agent import DocumentationAgent
 from .agents.reviewer_agent import ReviewerAgent
@@ -8,7 +8,7 @@ app = FastAPI()
 
 @app.post("/backlog")
 async def backlog(payload: dict):
-    agent = BacklogAgent()
+    agent = DevOpsBacklogAgent()
     return await agent.run(payload, print, "task-backlog")
 
 @app.post("/architecture")
